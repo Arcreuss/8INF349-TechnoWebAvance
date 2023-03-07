@@ -173,13 +173,13 @@ def order_get(id):
         del product_order["order_id"]
         del product_order["id"]
         
-        test = {
+        product = {
             "product" : {
             "id": product_order["product_id"]["id"],
             "quantity": product_order["quantity"]
             }
         }
-        order.update(test)
+        order.update(product)
     except:
         pass
 
