@@ -2,18 +2,19 @@
 # FLASK_DEBUG=True FLASK_APP=inf349 python3 -m flask run
 # http://dimprojetu.uqac.ca/~jgnault/shops/pay/
 
+# initialiser la base avec le run
+# batterie de test (unitaire, fonctionnel et d'intégration)
+
 import json
-import datetime
 import requests
 
-import click
 from flask import Flask, jsonify, request, abort, redirect, url_for
 import peewee as p
 from playhouse.shortcuts import model_to_dict, dict_to_model
 
 app = Flask(__name__)
 
-db = p.SqliteDatabase("db.sqlite")
+db = p.SqliteDatabase("db.sqlite3")
 
 class BaseModel(p.Model):
     class Meta:
@@ -29,8 +30,6 @@ class Product (BaseModel):
     weight = p.IntegerField(null = False)
     price = p.DoubleField(null = False)
     in_stock = p.BooleanField(default=False)
-
-
 
 class Order (BaseModel):
     id = p.AutoField(primary_key=True)
@@ -59,9 +58,9 @@ class ShippingOrder(BaseModel):
 class CreditCard(BaseModel):
     id = p.AutoField(primary_key=True)
     name = p.CharField(null = False)
-    number = p.CharField(null = False)
+    first_digits = p.CharField(null = False)
+    last_digits = p.CharField(null = False)
     expiration_year = p.IntegerField(null = False)
-    cvv = p.CharField(null = False)
     expiration_month = p.IntegerField(null = False)
    
 class CardOrder(BaseModel):
@@ -158,9 +157,9 @@ def add_order():
     new_product_order.save()
     new_order.save()
 
-    return redirect(url_for("order_get", id=new_order.id))
+    return "Location: /order/{0}".format(new_order.id), 302
     
-@app.route('/order/<int:id>', methods=['GET']) #FIX DISPLAY JSON
+@app.route('/order/<int:id>', methods=['GET'])
 def order_get(id):
     order = Order.get_or_none(id)
     if order is None:
@@ -171,13 +170,27 @@ def order_get(id):
     try:
         product_order = ProductOrder.get(ProductOrder.order_id == id)
         product_order = model_to_dict(product_order)
-        order.update(product_order)
+        del product_order["order_id"]
+        del product_order["id"]
+        
+        test = {
+            "product" : {
+            "id": product_order["product_id"]["id"],
+            "quantity": product_order["quantity"]
+            }
+        }
+        order.update(test)
     except:
         pass
 
     try:
         shipping_order = ShippingOrder.get(ShippingOrder.order_id == id)
         shipping_order = model_to_dict(shipping_order)
+        del shipping_order["order_id"]
+        del shipping_order["id"]
+        del shipping_order["shipping_id"]["id"]
+        shipping_order["shipping_information"] = shipping_order["shipping_id"]
+        del shipping_order["shipping_id"]
         order.update(shipping_order)
     except:
         pass
@@ -185,6 +198,9 @@ def order_get(id):
     try:
         card_order = CardOrder.get(CardOrder.order_id == id)
         card_order = model_to_dict(card_order)
+        del card_order["order_id"]
+        del card_order["id"]
+        del card_order["credit_card"]["id"]
         order.update(card_order)
     except:
         pass
@@ -192,6 +208,10 @@ def order_get(id):
     try:
         transac_order = TransactionOrder.get(TransactionOrder.order_id == id)
         transac_order = model_to_dict(transac_order)
+        del transac_order["id"]
+        del transac_order["order_id"]
+        transac_order["transaction"] = transac_order["transact_id"]
+        del transac_order["transact_id"]
         order.update(transac_order)
     except:
         pass
@@ -202,9 +222,18 @@ def order_get(id):
 def put_order(id):
     if not request.is_json:
         return abort(400)
-    order = Order.get(Order.id == id)
-    if order is None:
-            return abort(404)
+    try:
+        order = Order.get(Order.id == id)
+    except:
+        return jsonify({
+            "errors" : {
+                "order": {
+                    "code": "missing-items",
+                    "name": "La commande {0} n'existe pas".format(id) 
+                } 
+            }
+        }), 422
+    
     fr = list(request.json.keys())[0]
     if fr == "order":
         json_payload = request.json['order']
@@ -230,7 +259,7 @@ def put_order(id):
                     "name": "Il manque un ou plusieurs champs qui sont obligatoires" 
                 } 
             }
-        }), 400
+        }), 422
 
         try:
             new_shipping_order = ShippingOrder.create(shipping_id = shipping.id, order_id = order.id)
@@ -244,7 +273,7 @@ def put_order(id):
                     "name": "Une adresse à déja été assigné à cette commande" 
                 } 
             }
-        }), 400
+        }), 422
         new_shipping_order.save()
         shipping.save()
         order.save()
@@ -261,7 +290,10 @@ def put_order(id):
             }), 422
         json_payload = request.json['credit_card']
         try:
-            card = CreditCard.create(name = json_payload["name"],number = json_payload["number"],expiration_year = json_payload["expiration_year"],cvv = json_payload["cvv"],expiration_month = json_payload["expiration_month"])
+            number = json_payload["number"]
+            first = number[0:4]
+            last = number[-4:]
+            card = CreditCard.create(name = json_payload["name"],first_digits = first,last_digits = last,expiration_year = json_payload["expiration_year"],expiration_month = json_payload["expiration_month"])
         except:
             return jsonify({
             "errors" : {
@@ -270,9 +302,9 @@ def put_order(id):
                     "name": "Il manque un ou plusieurs champs qui sont obligatoires" 
                 } 
             }
-        }), 400
+        }), 422
         new_card_order = CardOrder.create(credit_card = card.id, order_id = order.id)
-       
+
         if order.paid:
             return jsonify({
                 "errors" : {
@@ -294,6 +326,11 @@ def put_order(id):
         del card_order["id"]
         del card_order["credit_card"]["id"]
         card_order.update(amount_charged)
+        del card_order["credit_card"]["first_digits"]
+        del card_order["credit_card"]["last_digits"]
+        card_order["credit_card"]["number"] = json_payload["number"]
+        card_order["credit_card"]["cvv"] = json_payload["cvv"]
+        
         data = json.dumps(card_order)
         url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
         headers = {"Content-Type": "application/json; charset=utf-8"}
