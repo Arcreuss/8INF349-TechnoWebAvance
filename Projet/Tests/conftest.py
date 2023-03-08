@@ -1,7 +1,3 @@
-# conftest file for pytest to set up the test environment
-# we use the flask test client to make requests to the app
-# we initialize flask and peewee
-
 import pytest
 
 from inf349 import app, db, BaseModel, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,remplir_base
