@@ -2,8 +2,9 @@
 # FLASK_DEBUG=True FLASK_APP=inf349 python3 -m flask run
 # http://dimprojetu.uqac.ca/~jgnault/shops/pay/
 
-# initialiser la base avec le run
 # batterie de test (unitaire, fonctionnel et d'intégration)
+# trop de classe
+# fusionner get et put
 
 import json
 import requests
@@ -216,7 +217,7 @@ def order_get(id):
     except:
         pass
 
-    return jsonify(order)
+    return jsonify(order),200
 
 @app.route('/order/<int:id>', methods=['PUT'])
 def put_order(id):
