@@ -8,7 +8,6 @@ def init_db():
 
 
 class TestOrder():
-    init_db()
     def test_remplir_base(self):
         print("EZZZZZZZZZZZ")
         assert Product.select().count() == 50
