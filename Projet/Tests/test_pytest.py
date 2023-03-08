@@ -1,8 +1,14 @@
-import inc_dec    # The code to test
+def create_order(client):
+    response = client.post('/order', json={
+        'product': {
+            'id': 1,
+            'quantity': 10
+        }
+    })
+    assert response.status_code == 302
 
-def test_increment():
-    assert inc_dec.increment(3) == 4
-
-# This test is designed to fail for demonstration purposes.
-def test_decrement():
-    assert inc_dec.decrement(3) == 4
+class TestGetOrder:
+    def test_get_order(self, client):
+        create_order(client)
+        response = client.get('/order/1')
+        assert response.status_code == 200 
