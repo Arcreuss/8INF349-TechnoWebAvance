@@ -9,7 +9,7 @@ def init_db():
 
 class TestOrder():
     def test_remplir_base(self):
-        print("EZZZZZZZZZZZ")
+        # print("test")
         assert Product.select().count() == 50
 
     def test_create_order(self, client):

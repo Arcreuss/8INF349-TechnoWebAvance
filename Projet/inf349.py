@@ -25,7 +25,7 @@ class Product (BaseModel):
     name = p.CharField(unique=True, null=False)
     type = p.CharField(null = False) 
     description = p.CharField()
-    image = p.CharField(unique=True, null=False)
+    image = p.CharField(null=False)
     height = p.IntegerField(null = False)
     weight = p.IntegerField(null = False)
     price = p.DoubleField(null = False)
@@ -385,8 +385,3 @@ def init_db():
     db.drop_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
     db.create_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
     remplir_base()
-    
-
-if __name__ == "__main__":
-    init_db()
-    app.run()
