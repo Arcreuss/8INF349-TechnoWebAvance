@@ -368,11 +368,7 @@ def put_order(id):
 
     return redirect(url_for("order_get", id=order.id))
     
-@app.cli.command("init-db")
-def init_db():
-    db.drop_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
-    db.create_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
-    
+def remplir_base():
     url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -382,6 +378,14 @@ def init_db():
         product['id'] = None
         new = dict_to_model(Product,product)
         new.save()
+
+@app.cli.command("init-db")
+def init_db():
+    db.connect()
+    db.drop_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
+    db.create_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
+    remplir_base()
+    
 
 if __name__ == "__main__":
     init_db()
