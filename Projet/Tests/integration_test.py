@@ -29,10 +29,3 @@ def test_database(client):
     assert shipping_order == ShippingOrder.get(ShippingOrder.id == 1)
     assert card_order == CreditCard.get(CreditCard.id == 1)
     assert card == CardOrder.get(CardOrder.id == 1)
-
-class TestOrder:
-    def test_order(self, client):
-        test_remplir_base()
-        test_database(client)
-
-    
