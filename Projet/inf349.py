@@ -83,9 +83,18 @@ def products_get():
     produits_array = []
     for produit in produits:
         produits_array.append(model_to_dict(produit))
-        
-    print(produits_array)
     return jsonify(produits_array)
+
+def total_price(prix, quantite):
+    return prix * quantite
+
+def calc_weight(weight):
+    if weight <= 500:
+        return 5
+    elif weight <= 2000:
+        return 10
+    else:
+        return 25
 
 @app.route('/order', methods=['POST'])
 def add_order():
@@ -144,17 +153,10 @@ def add_order():
                 } 
             }
         }), 422
-    new_order.total_price = float(new_product_order.quantity) * product.price
+    new_order.total_price = total_price(product.price,new_product_order.quantity)
     
-    weight_total = product.weight * new_product_order.quantity
-    if weight_total <= 500:
-        new_order.shipping_price = 5
-    elif weight_total <= 2000:
-        new_order.shipping_price = 10
-    else:
-        new_order.shipping_price = 25
+    new_order.shipping_price = calc_weight(product.weight * new_product_order.quantity)
 
-    
     new_product_order.save()
     new_order.save()
 

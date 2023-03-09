@@ -1,4 +1,8 @@
-def create_order(client):
+def get_products(client):
+    response = client.get('/')
+    assert response.status_code == 200
+
+def post_order(client):
     response = client.post('/order', json={
         'product': {
             'id': 23,
@@ -39,10 +43,15 @@ def check_order(client):
     assert response.status_code == 200
     assert response.json["id"] == 1
     assert response.json["total_price"] == 45.4
+    assert response.json["email"] == "jgnault@uqac.ca"
+    assert response.json["credit_card"]["first_digits"] == "4242"
+    assert response.json["transaction"]["success"]
+    
 
 class TestGetOrder:
     def test_get_order(self, client):
-        create_order(client)
+        get_products(client)
+        post_order(client)
         put_valid_shipping_info(client) 
         put_valid_credit_card(client)
         response = client.get('/order/1')
