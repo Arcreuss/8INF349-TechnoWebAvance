@@ -1,4 +1,4 @@
-from inf349 import db, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,remplir_base,total_price,calc_weight
+from api8inf349 import db, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,remplir_base,total_price,calc_weight
 
 def test_remplir_base():
     product = Product.select()

@@ -1,4 +1,4 @@
-from inf349 import db, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,total_price,calc_weight
+from api8inf349 import db, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,total_price,calc_weight
 def test_total_price(client):
     assert total_price(50,3) == 150
 

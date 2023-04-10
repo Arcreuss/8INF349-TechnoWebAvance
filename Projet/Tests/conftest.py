@@ -1,6 +1,6 @@
 import pytest
 
-from inf349 import app, db, BaseModel, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,remplir_base
+from api8inf349 import app, db, BaseModel, Product, Order , ProductOrder, ShippingInformation, ShippingOrder, CreditCard, CardOrder, Transaction, TransactionOrder,remplir_base
 
 @pytest.fixture
 def client():

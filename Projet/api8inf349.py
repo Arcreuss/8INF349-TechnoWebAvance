@@ -1,12 +1,17 @@
-# export FLASK_DEBUG=True FLASK_APP=inf349 REDIS_URL=redis://localhost DB_HOST=localhost DB_USER=user DB_PASSWORD=pass DB_PORT=5000 DB_NAME=inf349
+# export FLASK_DEBUG=True FLASK_APP=api8inf349 REDIS_URL=redis://localhost DB_HOST=localhost DB_USER=user DB_PASSWORD=pass DB_PORT=5432 DB_NAME=api8inf349
 # python3 -m flask init-db
 # python3 -m flask run
+
+# docker build -t api8inf349
+# docker run -e REDIS_URL=redis://localhost -e DB_HOST=localhost -e DB_USER=user -e DB_PASSWORD=pass -e DB_PORT=5432 -e DB_NAME=api8inf349
+
+
 # http://dimprojetu.uqac.ca/~jgnault/shops/pay/
+
+
 
 # trop de classe
 # fusionner get et put
-
-
 
 import json
 import requests
