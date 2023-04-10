@@ -21,7 +21,6 @@ DB_USER = os.environ.get('DB_USER', 'user')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'pass')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'api8inf349')
-REDIS_URL= os.environ.get('REDIS_URL', 'redis://localhost')
 
 app = Flask(__name__)
 
