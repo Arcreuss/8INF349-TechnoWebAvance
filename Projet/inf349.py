@@ -1,21 +1,31 @@
-# FLASK_DEBUG=True FLASK_APP=inf349 python3 -m flask init-db
-# FLASK_DEBUG=True FLASK_APP=inf349 python3 -m flask run
+# export FLASK_DEBUG=True FLASK_APP=inf349 REDIS_URL=redis://localhost DB_HOST=localhost DB_USER=user DB_PASSWORD=pass DB_PORT=5000 DB_NAME=inf349
+# python3 -m flask init-db
+# python3 -m flask run
 # http://dimprojetu.uqac.ca/~jgnault/shops/pay/
 
-# batterie de test (unitaire, fonctionnel et d'intégration)
 # trop de classe
 # fusionner get et put
 
+
+
 import json
 import requests
+import os
 
 from flask import Flask, jsonify, request, abort, redirect, url_for
 import peewee as p
 from playhouse.shortcuts import model_to_dict, dict_to_model
 
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_USER = os.environ.get('DB_USER', 'user')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'pass')
+DB_PORT = os.environ.get('DB_PORT', '5432')
+DB_NAME = os.environ.get('DB_NAME', 'api8inf349')
+REDIS_URL= os.environ.get('REDIS_URL', 'redis://localhost')
+
 app = Flask(__name__)
 
-db = p.SqliteDatabase("db.sqlite3")
+db = p.PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
 
 class BaseModel(p.Model):
     class Meta:
