@@ -8,10 +8,13 @@
 
 # http://dimprojetu.uqac.ca/~jgnault/shops/pay/
 
-
-
 # trop de classe
 # fusionner get et put
+# plus que 1 produit possible
+# système de mise en cache (attedndre que docker marche)
+# extraire le système de paiement dans un gestionnaire de tâche en arrière-plan
+# l'erreur doit être persistée dans la base de donnée
+# Interface utilisateur (front-end) HTML
 
 import json
 import requests
