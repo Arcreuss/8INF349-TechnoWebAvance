@@ -451,9 +451,16 @@ def put_order(id):
         new_card_order.save()
         card.save()
         order.save()
-        order = model_to_dict(order)
+
         redis.set("cours", "8inf349")
-        redis.set(order.id, order)
+
+        cache_key = "order-{0}".format(order.id)
+        
+        order = model_to_dict(order)
+        order = json.dumps(order)
+
+        redis.set(cache_key, order)
+
     return redirect(url_for("order_get", id=order.id))
     
 def process_payment(data, order_id, card_id):
