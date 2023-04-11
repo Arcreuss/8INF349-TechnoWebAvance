@@ -191,9 +191,10 @@ def add_order():
 @app.route('/order/<int:id>', methods=['GET'])
 def order_get(id):
     try:
-        order = redis.get(id)
+        cache_key = "order-{0}".format(id)
+        order = redis.get(cache_key)
         if order is not None:
-            order = model_to_dict(order)
+            order = json.loads(order)
 
         if order.payment_status == "en train d'être payée":
                 return '', 202
