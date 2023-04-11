@@ -396,6 +396,7 @@ def remplir_base():
     json_payload = response.json()
     for product in json_payload["products"]:
         product['id'] = None
+        product['description'] = product['description'].strip('\x00')
         new = dict_to_model(Product,product)
         new.save()
 
