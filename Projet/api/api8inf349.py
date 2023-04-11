@@ -19,16 +19,24 @@
 import json
 import requests
 import os
+import click
 
 from flask import Flask, jsonify, request, abort, redirect, url_for
 import peewee as p
 from playhouse.shortcuts import model_to_dict, dict_to_model
+
+from redis import Redis
+from rq import Queue, Worker
 
 DB_HOST = os.environ.get('DB_HOST', 'localhost')
 DB_USER = os.environ.get('DB_USER', 'user')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'pass')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'api8inf349')
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost')
+
+redis = Redis.from_url(REDIS_URL)
+queue = Queue(connection=redis)
 
 app = Flask(__name__)
 
@@ -55,6 +63,7 @@ class Order (BaseModel):
     email = p.CharField(null = True)
     paid = p.BooleanField(default=False)
     shipping_price = p.IntegerField(null = True)
+    payment_status = p.CharField(default="en attente")
 
 class ProductOrder(BaseModel):
     product_id = p.ForeignKeyField(Product, backref="product",null = False)
@@ -184,8 +193,13 @@ def order_get(id):
     order = Order.get_or_none(id)
     if order is None:
         return abort(404)
-    
+
     order = model_to_dict(order)
+
+    if order.payment_status == "en train d'être payée":
+            return '', 202
+
+    del order["payment_status"]
 
     try:
         product_order = ProductOrder.get(ProductOrder.order_id == id)
@@ -339,6 +353,9 @@ def put_order(id):
         data = model_to_dict(card)
         data.update(amount_charged)
 
+        if order.payment_status == "en train d'être payée":
+            return '', 409
+
         card_order = CardOrder.get(CardOrder.order_id == id)
         card_order = model_to_dict(card_order)
 
@@ -352,31 +369,17 @@ def put_order(id):
         card_order["credit_card"]["cvv"] = json_payload["cvv"]
         
         data = json.dumps(card_order)
-        url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
-        headers = {"Content-Type": "application/json; charset=utf-8"}
+       
+        if order.payment_status == "en attente":
+            order.payment_status = "en train d'être payée"
+            payment_info = queue.enqueue(process_payment, data, order.id)
+            
+        if not order.payment_status == "payée":
+            return '', 202
         
-        response = requests.post(url, headers=headers, data=data)
-        
-        json_payload = response.json()
-        cle = list(json_payload)[0]
-        if cle == "errors":
-            qry=CardOrder.delete().where (CardOrder.order_id==card.id)
-            qry.execute()
-            qry=CreditCard.delete().where (CreditCard.id==card.id)
-            qry.execute()
-            return jsonify({
-                "errors" : {
-                    "order": {
-                        "code": "card-declined",
-                        "name": "La carte de crédit a été déclinée." 
-                    } 
-                }
-            }), 422
 
-        json_payload = json_payload["transaction"]
-        order.paid = json_payload["success"]
-
-        
+        json_payload = payment_info.result["transaction"]
+        order.paid = payment_info.result["success"]
         
         transact = Transaction.create(id = json_payload["id"],success = json_payload["success"],amount_charged = json_payload["amount_charged"])
         transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
@@ -388,6 +391,33 @@ def put_order(id):
 
     return redirect(url_for("order_get", id=order.id))
     
+def process_payment(data, id):
+    url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+
+    response = requests.post(url, headers=headers, data=data)
+  
+    json_payload = response.json()
+    cle = list(json_payload)[0]
+    if cle == "errors":
+        qry=CardOrder.delete().where (CardOrder.order_id==card.id)
+        qry.execute()
+        qry=CreditCard.delete().where (CreditCard.id==card.id)
+        qry.execute()
+        return jsonify({
+            "errors" : {
+                "order": {
+                    "code": "card-declined",
+                    "name": "La carte de crédit a été déclinée." 
+                } 
+            }
+        }), 422
+    
+    order = Order.get(Order.id == id)
+    order.payment_status = "payée"
+    order.save()
+    return json_payload
+
 def remplir_base():
     url = "http://dimprojetu.uqac.ca/~jgnault/shops/products/"
     headers = {"Content-Type": "application/json; charset=utf-8"}
@@ -406,3 +436,8 @@ def init_db():
     db.drop_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
     db.create_tables([Product,Order,ProductOrder,ShippingInformation,ShippingOrder,CreditCard,CardOrder,Transaction,TransactionOrder])
     remplir_base()
+
+@app.cli.command("worker")
+def rq_worker():
+    worker = Worker([queue], connection=redis)
+    worker.work()
