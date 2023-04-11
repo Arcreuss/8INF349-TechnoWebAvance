@@ -372,7 +372,7 @@ def put_order(id):
        
         if order.payment_status == "en attente":
             order.payment_status = "en train d'être payée"
-            payment_info = queue.enqueue(process_payment, data, order.id)
+            payment_info = queue.enqueue(process_payment, data, order.id, card.id)
             
         if not order.payment_status == "payée":
             return '', 202
@@ -391,7 +391,7 @@ def put_order(id):
 
     return redirect(url_for("order_get", id=order.id))
     
-def process_payment(data, id):
+def process_payment(data, order_id, card_id):
     url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -400,9 +400,9 @@ def process_payment(data, id):
     json_payload = response.json()
     cle = list(json_payload)[0]
     if cle == "errors":
-        qry=CardOrder.delete().where (CardOrder.order_id==card.id)
+        qry=CardOrder.delete().where (CardOrder.order_id==card_id)
         qry.execute()
-        qry=CreditCard.delete().where (CreditCard.id==card.id)
+        qry=CreditCard.delete().where (CreditCard.id==card_id)
         qry.execute()
         return jsonify({
             "errors" : {
@@ -413,7 +413,7 @@ def process_payment(data, id):
             }
         }), 422
     
-    order = Order.get(Order.id == id)
+    order = Order.get(Order.id == order_id)
     order.payment_status = "payée"
     order.save()
     return json_payload
