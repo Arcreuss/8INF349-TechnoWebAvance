@@ -451,6 +451,7 @@ def put_order(id):
         new_card_order.save()
         card.save()
         order.save()
+        order = model_to_dict(order)
         redis.set(order.id, order)
     return redirect(url_for("order_get", id=order.id))
     
