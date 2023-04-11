@@ -192,9 +192,8 @@ def add_order():
 def order_get(id):
     try:
         cache_key = "order-{0}".format(id)
-        order = redis.get(cache_key)
-        if order is not None:
-            order = json.loads(order)
+        if redis.exists(cache_key):
+            order = json.loads(redis.get(cache_key))
 
         if order.payment_status == "en train d'être payée":
                 return '', 202
