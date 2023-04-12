@@ -197,63 +197,62 @@ def order_get(id):
         cache_key = "order-{0}".format(id)
         if redis.exists(cache_key):
             order = json.loads(redis.get(cache_key))
-            return '', 202
+        
+            if order.payment_status == "en train d'être payée":
+                    return '', 202
 
-        if order.payment_status == "en train d'être payée":
-                return '', 202
+            del order["payment_status"]
 
-        del order["payment_status"]
-
-        try:
-            product_order = ProductOrder.get(ProductOrder.order_id == id)
-            product_order = model_to_dict(product_order)
-            del product_order["order_id"]
-            del product_order["id"]
-            
-            product = {
-                "product" : {
-                "id": product_order["product_id"]["id"],
-                "quantity": product_order["quantity"]
+            try:
+                product_order = ProductOrder.get(ProductOrder.order_id == id)
+                product_order = model_to_dict(product_order)
+                del product_order["order_id"]
+                del product_order["id"]
+                
+                product = {
+                    "product" : {
+                    "id": product_order["product_id"]["id"],
+                    "quantity": product_order["quantity"]
+                    }
                 }
-            }
-            order.update(product)
-        except:
-            pass
+                order.update(product)
+            except:
+                pass
 
-        try:
-            shipping_order = ShippingOrder.get(ShippingOrder.order_id == id)
-            shipping_order = model_to_dict(shipping_order)
-            del shipping_order["order_id"]
-            del shipping_order["id"]
-            del shipping_order["shipping_id"]["id"]
-            shipping_order["shipping_information"] = shipping_order["shipping_id"]
-            del shipping_order["shipping_id"]
-            order.update(shipping_order)
-        except:
-            pass
+            try:
+                shipping_order = ShippingOrder.get(ShippingOrder.order_id == id)
+                shipping_order = model_to_dict(shipping_order)
+                del shipping_order["order_id"]
+                del shipping_order["id"]
+                del shipping_order["shipping_id"]["id"]
+                shipping_order["shipping_information"] = shipping_order["shipping_id"]
+                del shipping_order["shipping_id"]
+                order.update(shipping_order)
+            except:
+                pass
 
-        try:
-            card_order = CardOrder.get(CardOrder.order_id == id)
-            card_order = model_to_dict(card_order)
-            del card_order["order_id"]
-            del card_order["id"]
-            del card_order["credit_card"]["id"]
-            order.update(card_order)
-        except:
-            pass
+            try:
+                card_order = CardOrder.get(CardOrder.order_id == id)
+                card_order = model_to_dict(card_order)
+                del card_order["order_id"]
+                del card_order["id"]
+                del card_order["credit_card"]["id"]
+                order.update(card_order)
+            except:
+                pass
 
-        try:
-            transac_order = TransactionOrder.get(TransactionOrder.order_id == id)
-            transac_order = model_to_dict(transac_order)
-            del transac_order["id"]
-            del transac_order["order_id"]
-            transac_order["transaction"] = transac_order["transact_id"]
-            del transac_order["transact_id"]
-            order.update(transac_order)
-        except:
-            pass
+            try:
+                transac_order = TransactionOrder.get(TransactionOrder.order_id == id)
+                transac_order = model_to_dict(transac_order)
+                del transac_order["id"]
+                del transac_order["order_id"]
+                transac_order["transaction"] = transac_order["transact_id"]
+                del transac_order["transact_id"]
+                order.update(transac_order)
+            except:
+                pass
 
-        return jsonify(order),200
+            return jsonify(order),200
 
     except:
 
