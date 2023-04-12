@@ -487,6 +487,7 @@ def process_payment(data, order_id, card_id):
         code = json_payload["code"]
         name = json_payload["name"]
         error = Error.create(code,name)
+        order = Order.get(Order.id == order_id)
         order.paid = "false"
         transact = Transaction.create(id = json_payload["id"],success = "false",amount_charged = json_payload["amount_charged"],error = error.id)
         transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
