@@ -21,7 +21,7 @@ import requests
 import os
 import click
 
-from flask import Flask, jsonify, request, abort, redirect, url_for
+from flask import Flask, jsonify, request, abort, redirect, url_for, render_template
 import peewee as p
 from playhouse.shortcuts import model_to_dict, dict_to_model
 
@@ -38,7 +38,7 @@ REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost')
 redis = Redis.from_url(REDIS_URL)
 queue = Queue(connection=redis)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 db = p.PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
 
@@ -103,7 +103,7 @@ class TransactionOrder(BaseModel):
     transact_id = p.ForeignKeyField(Transaction, backref="transaction")
     order_id = p.ForeignKeyField(Order, backref="order_transact")
 
-@app.route('/', methods=['GET']) 
+@app.route('/products', methods=['GET'])
 def products_get():
     produits = Product.select()
     produits_array = []
@@ -513,3 +513,7 @@ def init_db():
 def rq_worker():
     worker = Worker([queue], connection=redis)
     worker.work()
+
+@app.route("/")
+def home():
+    return render_template("index.html")
