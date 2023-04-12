@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API8inf349 feat. ChatGPT</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+      max-width: 500px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 5px;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    #response-container {
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>API8inf349 feat. ChatGPT</h1>
+  <form id="request-form">
+    <label for="url-input">URL:</label>
+    <input type="text" id="url-input" placeholder="Entrez l'URL de votre API" required />
+    <label for="method-select">Méthode:</label>
+    <select id="method-select" required>
+      <option value="GET">GET</option>
+      <option value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+    <label for="json-input">JSON:</label>
+    <textarea id="json-input" rows="5" placeholder="Entrez le JSON à envoyer"></textarea>
+    <button type="submit">Envoyer</button>
+  </form>
+  <pre id="response-container"></pre>
+
+  <script>
+    document.getElementById('request-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const urlInput = document.getElementById('url-input');
+      const methodSelect = document.getElementById('method-select');
+      const jsonInput = document.getElementById('json-input');
+      const responseContainer = document.getElementById('response-container');
+      responseContainer.textContent = ''; // Réinitialiser le contenu du champ de réponse
+
+      fetch(urlInput.value, {
+        method: methodSelect.value,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: methodSelect.value === 'GET' ? null : jsonInput.value,
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erreur: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        responseContainer.textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        responseContainer.textContent = `Erreur: ${error.message}`;
+      });
+    });
+  </script>
+</body>
+</html>
