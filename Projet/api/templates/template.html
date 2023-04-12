@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Request Template</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    form {
+      display: grid;
+      gap: 10px;
+      max-width: 500px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 5px;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    #response-container {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Request Template</h1>
+  <form id="request-form">
+    <label for="userInput">URL:</label>
+      <input type="text" id="userInput" name="userInput" value="http://172.25.0.4:5000/" oninput="checkInput(this)">
+<!--    <input type="text" id="url-input" value="http://172.25.0.4:5000/" placeholder="Entrez l'URL de votre API" required />-->
+    <label for="method-select">Méthode:</label>
+    <select id="method-select" required>
+      <option value="GET">GET</option>
+      <option value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+    <label for="json-input">JSON:</label>
+    <textarea id="json-input" rows="5" placeholder="Entrez le JSON à envoyer"></textarea>
+    <button type="submit">Envoyer</button>
+  </form>
+  <pre id="response-container"></pre>
+
+  <script>
+  function checkInput(inputField) {
+    var predefinedValue = 'http://172.25.0.4:5000/';
+    var inputValue = inputField.value;
+    if (!inputValue.startsWith(predefinedValue)) {
+      inputField.value = predefinedValue;
+    }
+  }
+</script>
+
+  <script>
+    document.getElementById('request-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const urlInput = document.getElementById('userInput');
+      const methodSelect = document.getElementById('method-select');
+      const jsonInput = document.getElementById('json-input');
+      const responseContainer = document.getElementById('response-container');
+      responseContainer.textContent = ''; // Réinitialiser le contenu du champ de réponse
+
+      fetch(urlInput.value, {
+        method: methodSelect.value,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: methodSelect.value === 'GET' ? null : jsonInput.value,
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erreur: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        responseContainer.textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        responseContainer.textContent = `Erreur: ${error.message}`;
+      });
+    });
+  </script>
+</body>
+</html>
