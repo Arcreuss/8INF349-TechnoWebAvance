@@ -15,7 +15,6 @@
 import json
 import requests
 import os
-import click
 
 from flask import Flask, jsonify, request, abort, redirect, url_for, render_template
 import peewee as p
@@ -262,7 +261,7 @@ def order_get(id):
 
         order = model_to_dict(order)
 
-        if order.payment_status == "en train d'être payée":
+        if order["payment_status"] == "en train d'être payée":
                 return '', 202
 
         del order["payment_status"]
@@ -446,30 +445,30 @@ def put_order(id):
 
         if order.payment_status == "en attente":
             order.payment_status = "en train d'être payée"
-            payment_info = queue.enqueue(process_payment, data, order.id, card.id)
-            
-        if not order.payment_status == "payée":
-            return '', 202
-        
+            order.save()
+            job = queue.enqueue(process_payment, data, order.id, card.id)
+            if job.is_finished:
+                json_payload = job.return_value["transaction"]
+                order.paid = job.return_value["success"]
 
-        json_payload = payment_info.result["transaction"]
-        order.paid = payment_info.result["success"]
-        
-        transact = Transaction.create(id = json_payload["id"],success = json_payload["success"],amount_charged = json_payload["amount_charged"])
-        transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
-        transact.save()
-        transacOrder.save()
-        new_card_order.save()
-        card.save()
-        order.save()
+                transact = Transaction.create(id=json_payload["id"], success=json_payload["success"],
+                                              amount_charged=json_payload["amount_charged"])
+                transacOrder = TransactionOrder.create(transact_id=transact.id, order_id=order.id)
+                transact.save()
+                transacOrder.save()
+                new_card_order.save()
+                card.save()
+                order.save()
 
-        cache_key = "order-{0}".format(order.id)
-        order = model_to_dict(order)
-        order = json.dumps(order)
-        redis.set(cache_key, order)
+                cache_key = "order-{0}".format(order.id)
+                order = model_to_dict(order)
+                order = json.dumps(order)
+                redis.set(cache_key, order)
+            else:
+                return '', 202
 
     return redirect(url_for("order_get", id=order.id))
-    
+
 def process_payment(data, order_id, card_id):
     url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
     headers = {"Content-Type": "application/json; charset=utf-8"}
@@ -490,9 +489,9 @@ def process_payment(data, order_id, card_id):
         order = Order.get(Order.id == order_id)
         order.paid = "false"
         transact = Transaction.create(id = json_payload["id"],success = "false",amount_charged = json_payload["amount_charged"],error = error.id)
-        transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
+        transac_order = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
         transact.save()
-        transacOrder.save()
+        transac_order.save()
         error.save()
     order = Order.get(Order.id == order_id)
     order.payment_status = "payée"
@@ -520,8 +519,16 @@ def init_db():
 
 @app.cli.command("worker")
 def rq_worker():
-    worker = Worker([queue], connection=redis)
+    db.connect()
+    redis_url = os.environ.get('REDIS_URL')
+    conn = redis.from_url(redis_url)
+    # Créer une liste de queues à écouter
+    queues = [Queue('default', connection=conn)]
+    # Créer un worker pour traiter les tâches en attente
+    worker = Worker(queues, connection=conn)
+    # Démarrer le worker
     worker.work()
+
 
 @app.route("/")
 def home():
