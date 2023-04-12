@@ -97,14 +97,22 @@ class CardOrder(BaseModel):
     credit_card = p.ForeignKeyField(CreditCard, backref="creditCard")
     order_id = p.ForeignKeyField(Order, backref="order_card")
 
+class Error(BaseModel):
+    id = p.AutoField(primary_key=True)
+    code = p.CharField(null = False)
+    name = p.CharField(null = False)
+
 class Transaction(BaseModel):
     id = p.CharField(primary_key=True,null = False)
     success = p.BooleanField(null = False)
     amount_charged = p.DoubleField(null=False)
+    error = p.ForeignKeyField(Error, backref="error_order",null = True, unique = True)
 
 class TransactionOrder(BaseModel):
     transact_id = p.ForeignKeyField(Transaction, backref="transaction")
     order_id = p.ForeignKeyField(Order, backref="order_transact")
+
+
 
 @app.route('/products', methods=['GET'])
 def products_get():
@@ -310,6 +318,10 @@ def order_get(id):
             del transac_order["order_id"]
             transac_order["transaction"] = transac_order["transact_id"]
             del transac_order["transact_id"]
+            if transac_order["transaction"]["error"] is not None:
+                del transac_order["transaction"]["error"]["id"]
+            else:
+                del transac_order["transaction"]["error"]
             order.update(transac_order)
         except:
             pass
@@ -434,6 +446,10 @@ def put_order(id):
         
         data = json.dumps(card_order)
        
+        new_card_order.save()
+        card.save()
+        order.save()
+
         if order.payment_status == "en attente":
             order.payment_status = "en train d'être payée"
             payment_info = queue.enqueue(process_payment, data, order.id, card.id)
@@ -453,13 +469,9 @@ def put_order(id):
         card.save()
         order.save()
 
-        redis.set("cours", "8inf349")
-
         cache_key = "order-{0}".format(order.id)
-        
         order = model_to_dict(order)
         order = json.dumps(order)
-
         redis.set(cache_key, order)
 
     return redirect(url_for("order_get", id=order.id))
@@ -477,15 +489,13 @@ def process_payment(data, order_id, card_id):
         qry.execute()
         qry=CreditCard.delete().where (CreditCard.id==card_id)
         qry.execute()
-        return jsonify({
-            "errors" : {
-                "order": {
-                    "code": "card-declined",
-                    "name": "La carte de crédit a été déclinée." 
-                } 
-            }
-        }), 422
-    
+        error = Error.create("card-declined","La carte de crédit a été déclinée.")
+        order.paid = "false"
+        transact = Transaction.create(id = json_payload["id"],success = "false",amount_charged = json_payload["amount_charged"],error = error.id)
+        transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
+        transact.save()
+        transacOrder.save()
+        error.save()
     order = Order.get(Order.id == order_id)
     order.payment_status = "payée"
     order.save()
