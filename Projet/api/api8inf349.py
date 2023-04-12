@@ -11,10 +11,6 @@
 # trop de classe
 # fusionner get et put
 # plus que 1 produit possible
-# système de mise en cache (attedndre que docker marche)
-# extraire le système de paiement dans un gestionnaire de tâche en arrière-plan
-# l'erreur doit être persistée dans la base de donnée
-# Interface utilisateur (front-end) HTML
 
 import json
 import requests
@@ -111,8 +107,6 @@ class Transaction(BaseModel):
 class TransactionOrder(BaseModel):
     transact_id = p.ForeignKeyField(Transaction, backref="transaction")
     order_id = p.ForeignKeyField(Order, backref="order_transact")
-
-
 
 @app.route('/products', methods=['GET'])
 def products_get():
@@ -489,7 +483,10 @@ def process_payment(data, order_id, card_id):
         qry.execute()
         qry=CreditCard.delete().where (CreditCard.id==card_id)
         qry.execute()
-        error = Error.create("card-declined","La carte de crédit a été déclinée.")
+        json_payload = json_payload["errors"]["credit_card"]
+        code = json_payload["code"]
+        name = json_payload["name"]
+        error = Error.create(code,name)
         order.paid = "false"
         transact = Transaction.create(id = json_payload["id"],success = "false",amount_charged = json_payload["amount_charged"],error = error.id)
         transacOrder = TransactionOrder.create(transact_id = transact.id,order_id = order.id)
