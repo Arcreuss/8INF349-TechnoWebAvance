@@ -28,6 +28,8 @@ from playhouse.shortcuts import model_to_dict, dict_to_model
 from redis import Redis
 from rq import Queue, Worker
 
+from jinja2 import Environment, FileSystemLoader
+
 DB_HOST = os.environ.get('DB_HOST', 'localhost')
 DB_USER = os.environ.get('DB_USER', 'user')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'pass')
@@ -39,6 +41,7 @@ redis = Redis.from_url(REDIS_URL)
 queue = Queue(connection=redis)
 
 app = Flask(__name__, template_folder='templates')
+app.config['template_engine'] = 'Jinja2'
 
 db = p.PostgresqlDatabase(database=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
 
@@ -516,4 +519,12 @@ def rq_worker():
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    url1 = 'http://172.25.0.4:5000/products'
+    url2 = 'http://172.25.0.4:5000/order'
+    url3 = 'http://172.25.0.4:5000/order/'
+    title_request1 = 'Récupérer tous les produits'
+    title_request2 = 'Poster une commande (JSON requis)'
+    title_request3 = 'Récupérer une commande avec un id'
+    title_request4 = 'Insérer ses informations client (JSON requis)'
+    title_request5 = 'Insérer ses informations bancaires (JSON requis)'
+    return render_template("index.html",  url_products=url1, url_order=url2, url_order_send = url3, title_request1=title_request1, title_request2=title_request2, title_request3=title_request3, title_request4=title_request4, title_request5=title_request5)

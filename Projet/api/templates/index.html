@@ -9,9 +9,32 @@
   <!-- Autres contenus de votre page -->
 
   <!-- Inclure le formulaire d'API à l'endroit souhaité -->
-  {% include 'template.html' %}
 
-  {% include 'template.html' %}
+<!-- GET - All Products -->
+  {% with url = url_products, TitleRequest = title_request1 %}
+    {% include "template.html" %}
+  {% endwith %}
+
+<!-- POST - Order_Id -->
+  {% with url = url_order, TitleRequest = title_request2 %}
+    {% include "template.html" %}
+  {% endwith %}
+
+<!-- GET - Order_Id -->
+  {% with url = url_order_send, TitleRequest = title_request3 %}
+    {% include "template.html" %}
+  {% endwith %}
+
+<!-- PUT - Order_Informations_Client -->
+  {% with url = url_order_send, TitleRequest = title_request4 %}
+    {% include "template.html" %}
+  {% endwith %}
+
+<!-- PUT - Order_Informations_Card -->
+  {% with url = url_order_send, TitleRequest = title_request5 %}
+    {% include "template.html" %}
+  {% endwith %}
+
 
   <!-- Autres contenus de votre page -->
 </body>

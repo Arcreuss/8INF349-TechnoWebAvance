@@ -43,11 +43,11 @@
   </style>
 </head>
 <body>
-  <h1>API Request Template</h1>
+  <h1>{{ TitleRequest }}</h1>
   <form id="request-form">
     <label for="userInput">URL:</label>
-      <input type="text" id="userInput" name="userInput" value="http://172.25.0.4:5000/" oninput="checkInput(this)">
-<!--    <input type="text" id="url-input" value="http://172.25.0.4:5000/" placeholder="Entrez l'URL de votre API" required />-->
+<!--      <input type="text" id="userInput" name="userInput" value="http://172.25.0.4:5000/" oninput="checkInput(this)">-->
+      <input type="text" id="userInput" name="userInput" value="{{ url }}" oninput="checkInput(this)">
     <label for="method-select">Méthode:</label>
     <select id="method-select" required>
       <option value="GET">GET</option>
@@ -63,7 +63,7 @@
 
   <script>
   function checkInput(inputField) {
-    var predefinedValue = 'http://172.25.0.4:5000/';
+    var predefinedValue = '{{ url }}';
     var inputValue = inputField.value;
     if (!inputValue.startsWith(predefinedValue)) {
       inputField.value = predefinedValue;
