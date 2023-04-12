@@ -197,6 +197,7 @@ def order_get(id):
         cache_key = "order-{0}".format(id)
         if redis.exists(cache_key):
             order = json.loads(redis.get(cache_key))
+            return '', 202
 
         if order.payment_status == "en train d'être payée":
                 return '', 202
