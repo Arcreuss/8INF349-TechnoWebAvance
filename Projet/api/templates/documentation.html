@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta lang="fr">
+<!--  <link rel="stylesheet" href="../css/request-doc.css">-->
+
+  <style>
+    input{
+      word-wrap: break-word;
+      word-break: break-all;
+      max-height: 500px;
+      max-width: 600px;
+    }
+  </style>
+
+</head>
+<body>
+  <h2> <u>{{ TitleDoc }}</u> </h2>
+
+  <h3>Route :</h3>
+  <p>URL : <input type="text" value="{{ UrlDoc }}" disabled></p>
+
+  <h3>Méthodes : {{ Methode }}</h3>
+
+  <h3>Exemple de corps Json : </h3>
+  <pre><code>
+    <input type="text" value="{{ JSON }}" disabled>
+  </code></pre>
+
+</body>
+</html>
