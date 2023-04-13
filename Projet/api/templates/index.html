@@ -2,40 +2,85 @@
 <html>
 <head>
   <title>BestApi</title>
-  <!-- Vos balises meta, styles, scripts, etc. ici -->
+  <meta charset="utf-8">
+  <meta lang="fr">
+<!--  <link rel="stylesheet" href="../css/index.css">-->
+  <style>
+
+    body{
+      position: relative;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2rem;
+      background-color: #007bff;
+      color: white;
+      font-weight: 200;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    #foot {
+      height: 150px;
+    }
+
+    #template {
+      justify-content: center;
+      display: inline-list-item;
+      min-height: 100vh;
+    }
+
+  </style>
+
 </head>
 <body>
+  <div id="template">
   <h1>Web Avancée - Api 8inf349</h1>
-  <!-- Autres contenus de votre page -->
-
-  <!-- Inclure le formulaire d'API à l'endroit souhaité -->
-
-<!-- GET - All Products -->
-  {% with url = url_products, TitleRequest = title_request1 %}
+<!-- Template - Form -->
+  {% with url = url_default, TitleRequest = title_request1 %}
     {% include "template.html" %}
   {% endwith %}
 
-<!-- POST - Order_Id -->
-  {% with url = url_order, TitleRequest = title_request2 %}
-    {% include "template.html" %}
+  <h1>Documentation API</h1>
+<!-- Doc Get all products-->
+  {% with UrlDoc = url_doc1, TitleDoc = title_doc1, Methode = methode_doc1, Description = desc_doc1, JSON = json_no_txt %}
+    {% include "documentation.html" %}
   {% endwith %}
 
-<!-- GET - Order_Id -->
-  {% with url = url_order_send, TitleRequest = title_request3 %}
-    {% include "template.html" %}
+<!-- Doc Get product with id-->
+  {% with UrlDoc = url_doc3, TitleDoc = title_doc2, Methode = methode_doc2, Description = desc_doc2, JSON = json_no_txt %}
+    {% include "documentation.html" %}
   {% endwith %}
 
-<!-- PUT - Order_Informations_Client -->
-  {% with url = url_order_send, TitleRequest = title_request4 %}
-    {% include "template.html" %}
+<!-- Doc Create order-->
+  {% with UrlDoc = url_doc2, TitleDoc = title_doc3, Methode = methode_doc3, Description = desc_doc3, JSON = json_txt1 %}
+    {% include "documentation.html" %}
   {% endwith %}
 
-<!-- PUT - Order_Informations_Card -->
-  {% with url = url_order_send, TitleRequest = title_request5 %}
-    {% include "template.html" %}
+<!-- Doc Put Customer Information-->
+  {% with UrlDoc = url_doc3, TitleDoc = title_doc4, Methode = methode_doc4, Description = desc_doc4, JSON = json_txt2 %}
+    {% include "documentation.html" %}
   {% endwith %}
 
+<!-- Doc Put Credit Card Information-->
+  {% with UrlDoc = url_doc3, TitleDoc = title_doc5, Methode = methode_doc5, Description = desc_doc5, JSON = json_txt3 %}
+    {% include "documentation.html" %}
+  {% endwith %}
 
-  <!-- Autres contenus de votre page -->
+    </div>
+
+  <div id="foot"></div>
 </body>
+
+<footer>
+
+<div class="footer"> <h2>API8inf349. All rights reserved. 2023.</h2></div>
+
+</footer>
 </html>

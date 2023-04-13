@@ -469,7 +469,7 @@ def put_order(id):
 
     return redirect(url_for("order_get", id=order.id))
 
-def process_payment(data, order_id, card_id):
+def process_payment(data, order_id, card_id, order):
     url = "http://dimprojetu.uqac.ca/~jgnault/shops/pay/"
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -532,12 +532,36 @@ def rq_worker():
 
 @app.route("/")
 def home():
+    # TEMPLATE
     url1 = 'http://172.25.0.4:5000/products'
     url2 = 'http://172.25.0.4:5000/order'
     url3 = 'http://172.25.0.4:5000/order/'
-    title_request1 = 'Récupérer tous les produits'
-    title_request2 = 'Poster une commande (JSON requis)'
-    title_request3 = 'Récupérer une commande avec un id'
-    title_request4 = 'Insérer ses informations client (JSON requis)'
-    title_request5 = 'Insérer ses informations bancaires (JSON requis)'
-    return render_template("index.html",  url_products=url1, url_order=url2, url_order_send = url3, title_request1=title_request1, title_request2=title_request2, title_request3=title_request3, title_request4=title_request4, title_request5=title_request5)
+    url_default = 'http://172.25.0.4:5000/'
+    title_request1 = 'Zone d\'envoie de requête'
+
+    # DOCUMENTATION
+    # Title tips
+    title_doc1 = 'Récupérer tous les produits'
+    title_doc2 = 'Récupérer une commande avec un id'
+    title_doc3 = 'Créer une commande'
+    title_doc4 = 'Insérer ses informations client'
+    title_doc5 = 'Insérer ses informations bancaires'
+
+    # Methods
+    methode_doc1 = 'GET'
+    methode_doc2 = 'POST'
+    methode_doc3 = 'PUT'
+    methode_doc4 = 'DEL'
+
+    # Json
+    json_no_txt = 'Pas de JSON à envoyer avec la méthode GET'
+    json_txt1 = '{ "product": { "id": 1, "quantity": 5 } }'
+    json_txt2 = '{ "order" : { "email" : "jgnault@uqac.ca", "shipping_information" : { "country" : "Canada", "address" : "201, rue Président-Kennedy", "postal_code" : "G7X 3Y7", "city" : "Chicoutimi", "province" : "QC" }}}'
+    json_txt3 = '{ "credit_card" : { "name" : "John Doe", "number" : "4242 4242 4242 4242", "expiration_year" : 2024, "cvv" : "123", "expiration_month" : 9 }}'
+
+
+    return render_template("index.html", url_default=url_default, title_request1=title_request1, #Template form
+                           url_doc1=url1, url_doc2=url2, url_doc3=url3, methode_doc1=methode_doc1, methode_doc2=methode_doc2, #Template Doc
+                           methode_doc3=methode_doc3, methode_doc4=methode_doc4, title_doc1=title_doc1,
+                           title_doc2=title_doc2, title_doc3=title_doc3, title_doc4=title_doc4, title_doc5=title_doc5,
+                           json_txt1=json_txt1, json_txt2=json_txt2, json_txt3=json_txt3, json_no_txt=json_no_txt)

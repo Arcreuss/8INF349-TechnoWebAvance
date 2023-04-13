@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>API Request Template</title>
+  <link rel="stylesheet" href="../css/request-template.css">
   <style>
     body {
       padding: 20px;
@@ -35,6 +36,7 @@
     #response-container {
       margin-top: 20px;
       max-height: 200px;
+      max-width: 600px;
       overflow-y: auto;
       white-space: pre-wrap;
       border: 1px solid #ccc;
@@ -59,6 +61,7 @@
     <textarea id="json-input" rows="5" placeholder="Entrez le JSON à envoyer"></textarea>
     <button type="submit">Envoyer</button>
   </form>
+  <h2>Réponse :</h2>
   <pre id="response-container"></pre>
 
   <script>
@@ -79,6 +82,10 @@
       const jsonInput = document.getElementById('json-input');
       const responseContainer = document.getElementById('response-container');
       responseContainer.textContent = ''; // Réinitialiser le contenu du champ de réponse
+
+      if (methodSelect.value === 'GET') {
+        methodSelect.disabled = true;
+    }
 
       fetch(urlInput.value, {
         method: methodSelect.value,

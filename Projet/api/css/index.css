@@ -1,0 +1,23 @@
+body{
+    position: relative;
+    background-color: #007bff;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    background-color: #007bff;
+    color: white;
+    font-weight: 300;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+#foot {
+    height: 150px;
+}
