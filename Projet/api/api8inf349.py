@@ -454,7 +454,6 @@ def put_order(id):
         new_card_order.save()
         card.save()
         order.save()
-
         if order.payment_status == "en attente":
             order.payment_status = "en train d'être payée"
             job = queue.enqueue(process_payment, data, order.id, card.id)
@@ -477,7 +476,6 @@ def process_payment(data, order_id, card_id):
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     response = requests.post(url, headers=headers, data=data)
-
     json_payload = response.json()
     cle = list(json_payload)[0]
     if cle == "errors":
@@ -492,8 +490,11 @@ def process_payment(data, order_id, card_id):
         order = Order.get(Order.id == order_id)
         order.paid = False
         order.payment_status = "en attente"
-        transact = Transaction.create(id=json_payload["id"], success=False,
-                                      amount_charged=json_payload["amount_charged"],error_id=error.id)
+        transac_id = "error-{0}".format(error.id)
+        amount = json.loads(data)
+        amount = amount["amount_charged"]
+        transact = Transaction.create(id=transac_id, success=False,
+                                      amount_charged=amount, error_id=error.id)
         transac_order = TransactionOrder.create(transact_id=transact.id, order_id=order_id)
         transact.save()
         transac_order.save()
@@ -501,14 +502,18 @@ def process_payment(data, order_id, card_id):
         error.save()
     else:
         order = Order.get(Order.id == order_id)
-        order.paid = True
-        order.payment_status = "payée"
+        transac_test = TransactionOrder.get(TransactionOrder.order_id == order_id)
+        if transac_test is not None:
+            qry = TransactionOrder.delete().where(TransactionOrder.order_id == order_id)
+            qry.execute()
         json_payload = json_payload["transaction"]
         transact = Transaction.create(id=json_payload["id"], success=True,
                                       amount_charged=json_payload["amount_charged"])
         transac_order = TransactionOrder.create(transact_id=transact.id, order_id=order_id)
         transact.save()
         transac_order.save()
+        order.paid = True
+        order.payment_status = "payée"
         order.save()
 
         cache_key = "order-{0}".format(order_id)
@@ -587,9 +592,10 @@ def home():
     json_txt2 = '{ "order" : { "email" : "jgnault@uqac.ca", "shipping_information" : { "country" : "Canada", "address" : "201, rue Président-Kennedy", "postal_code" : "G7X 3Y7", "city" : "Chicoutimi", "province" : "QC" }}}'
     json_txt3 = '{ "credit_card" : { "name" : "John Doe", "number" : "4242 4242 4242 4242", "expiration_year" : 2024, "cvv" : "123", "expiration_month" : 9 }}'
 
-    return render_template("index.html", url_default=hostname+url_default, title_request1=title_request1,  # Template form
-                           url_doc1=hostname+url1, url_doc2=hostname+url2, url_doc3=hostname+url3, methode_doc1=methode_doc1,  # Template Doc
+    return render_template("index.html", url_default=hostname + url_default, title_request1=title_request1,
+                           # Template form
+                           url_doc1=hostname + url1, url_doc2=hostname + url2, url_doc3=hostname + url3,
+                           methode_doc1=methode_doc1,  # Template Doc
                            methode_doc2=methode_doc2, methode_doc3=methode_doc3, title_doc1=title_doc1,
                            title_doc2=title_doc2, title_doc3=title_doc3, title_doc4=title_doc4, title_doc5=title_doc5,
                            json_txt1=json_txt1, json_txt2=json_txt2, json_txt3=json_txt3, json_no_txt=json_no_txt)
-
