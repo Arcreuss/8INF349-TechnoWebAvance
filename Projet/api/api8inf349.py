@@ -562,10 +562,10 @@ def home():
     hostname = request.headers.get('Host')
 
     # TEMPLATE
-    url1 = hostname + '/products'
-    url2 = hostname + '/order'
-    url3 = hostname + '/order/<int:order_id>'
-    url_default = hostname + '/'
+    url1 = hostname+'/products'
+    url2 = hostname+'/order'
+    url3 = hostname+'/order/<int:order_id>'
+    url_default = hostname+'/'
     title_request1 = 'Zone d\'envoie de requête'
 
     # DOCUMENTATION
