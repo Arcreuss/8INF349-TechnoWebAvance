@@ -42,15 +42,6 @@
       border: 1px solid #ccc;
       padding: 10px;
     }
-    #response-container2{
-      margin-top: 20px;
-      max-height: 200px;
-      max-width: 600px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
 
   </style>
 </head>
@@ -72,7 +63,6 @@
   </form>
   <h2>Réponse :</h2>
   <pre id="response-container"></pre>
-  <pre id="response-container2"></pre>
 
 
 
@@ -86,42 +76,34 @@
 }
 </script>
 
+<script>
+  document.getElementById('request-form').addEventListener('submit', function(event) {
+  event.preventDefault(); // Empêcher le rechargement de la page
 
-  <script>
-    document.getElementById('request-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const urlInput = document.getElementById('userInput');
-      const methodSelect = document.getElementById('method-select');
-      const jsonInput = document.getElementById('json-input');
-      const responseContainer = document.getElementById('response-container');
-      const responseContainer2 = document.getElementById('response-container2');
-      responseContainer.textContent = ''; // Réinitialiser le contenu du champ de réponse
+  var url = document.getElementById('userInput').value;
+  var method = document.getElementById('method-select').value;
+  var jsonData = document.getElementById('json-input').value;
+
+  var xhr = new XMLHttpRequest();
+  xhr.open(method, url, true);
+  xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        document.getElementById('response-container').textContent = xhr.responseText;
+      } else if (xhr.status === 302) {
+        document.getElementById('response-container').textContent = xhr.response;
+      } else if (xhr.status === 202) {
+        document.getElementById('response-container').textContent = '202 Accepted';
+      }else {
+        document.getElementById('response-container').textContent = 'Erreur : ' + xhr.status + ' ' + xhr.response;
+      }
+    }
+  };
+  xhr.send(jsonData);
+});
+</script>
 
 
-
-
-      fetch(urlInput.value, {
-        method: methodSelect.value,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: methodSelect.value === 'GET' ? null : jsonInput.value,
-      })
-      .then(response => {
-        if (!response.ok) {
-          responseContainer2.textContent = jsonInput.value;
-          throw new Error(`Erreur: ${response.status} ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        responseContainer.textContent = JSON.stringify(data, null, 2);
-
-      })
-      .catch(error => {
-        responseContainer.textContent = `Erreur: ${error.message}`;
-      });
-    });
-  </script>
 </body>
 </html>
