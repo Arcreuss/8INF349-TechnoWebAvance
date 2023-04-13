@@ -78,39 +78,57 @@
 
 <script>
   document.getElementById('request-form').addEventListener('submit', function(event) {
-  event.preventDefault(); // Empêcher le rechargement de la page
+    event.preventDefault(); // Empêcher le rechargement de la page
 
-  // Désactiver le bouton d'envoi
-  var submitButton = document.querySelector('button[type="submit"]');
-  submitButton.disabled = true;
+    // Désactiver le bouton d'envoi
+    var submitButton = document.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
 
-  var url = document.getElementById('userInput').value;
-  var method = document.getElementById('method-select').value;
-  var jsonData = document.getElementById('json-input').value;
+    var url = document.getElementById('userInput').value;
+    var method = document.getElementById('method-select').value;
+    var jsonData = document.getElementById('json-input').value;
 
-  var xhr = new XMLHttpRequest();
-  xhr.open(method, url, true);
-  xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        document.getElementById('response-container').textContent = xhr.responseText;
-      } else if (xhr.status === 302) {
-        document.getElementById('response-container').textContent = xhr.response;
-      } else if (xhr.status === 202) {
-        document.getElementById('response-container').textContent = '202 Accepted';
-      } else {
-        document.getElementById('response-container').textContent = 'Erreur : ' + xhr.status + ' ' + xhr.response;
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          document.getElementById('response-container').textContent = xhr.responseText;
+        } else if (xhr.status === 302) {
+          document.getElementById('response-container').textContent = xhr.response;
+        } else if (xhr.status === 202) {
+          document.getElementById('response-container').textContent = '202 Accepted';
+        } else {
+          document.getElementById('response-container').textContent = 'Erreur : ' + xhr.status + ' ' + xhr.response;
+        }
+        // Réactiver le bouton d'envoi après la réponse
+        submitButton.disabled = false;
       }
-      // Réactiver le bouton d'envoi après la réponse
-      submitButton.disabled = false;
+    };
+
+    // Empêcher l'envoi en double pour la méthode PUT
+    if (method === 'PUT') {
+      var previousXhr = document.getElementById('previous-xhr');
+      if (previousXhr) {
+        previousXhr.abort();
+      }
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+      xhr.setRequestHeader('If-None-Match', '');
+      xhr.setRequestHeader('Cache-Control', 'no-cache');
+      xhr.setRequestHeader('X-Content-Type-Options', 'nosniff');
+      xhr.setRequestHeader('X-XSS-Protection', '1; mode=block');
+      xhr.setRequestHeader('Pragma', 'no-cache');
+      xhr.setRequestHeader('Expires', '0');
+      xhr.setRequestHeader('Last-Modified', new Date().toUTCString());
+      xhr.setRequestHeader('ETag', '');
+      xhr.setRequestHeader('previous-xhr', 'true');
+      document.getElementById('previous-xhr').value = xhr;
     }
-  };
-  xhr.send(jsonData);
-});
 
+    xhr.send(jsonData);
+  });
 </script>
-
 
 </body>
 </html>
