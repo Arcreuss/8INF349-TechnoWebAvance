@@ -564,11 +564,13 @@ def rq_worker():
 
 @app.route("/")
 def home():
+    hostname = request.headers.get('Host')
+
     # TEMPLATE
-    url1 = 'http://172.25.0.4:5000/products'
-    url2 = 'http://172.25.0.4:5000/order'
-    url3 = 'http://172.25.0.4:5000/order/<int:order_id>'
-    url_default = 'http://172.25.0.4:5000/'
+    url1 = hostname+'/products'
+    url2 = hostname+'/order'
+    url3 = hostname+'/order/<int:order_id>'
+    url_default = hostname+'/'
     title_request1 = 'Zone d\'envoie de requête'
 
     # DOCUMENTATION
