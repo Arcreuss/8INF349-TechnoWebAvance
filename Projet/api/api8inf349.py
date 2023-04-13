@@ -469,7 +469,7 @@ def put_order(id):
             else:
                 return '', 202
 
-    return redirect(url_for("order_get", id=id))
+    return order_get(id)
 
 
 def process_payment(data, order_id, card_id):
