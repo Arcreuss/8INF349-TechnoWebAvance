@@ -562,10 +562,10 @@ def home():
     hostname = request.headers.get('Host')
 
     # TEMPLATE
-    url1 = hostname+'/products'
-    url2 = hostname+'/order'
-    url3 = hostname+'/order/<int:order_id>'
-    url_default = hostname+'/'
+    url1 = '/products'
+    url2 = '/order'
+    url3 = '/order/<int:order_id>'
+    url_default = '/'
     title_request1 = 'Zone d\'envoie de requête'
 
     # DOCUMENTATION
@@ -587,8 +587,9 @@ def home():
     json_txt2 = '{ "order" : { "email" : "jgnault@uqac.ca", "shipping_information" : { "country" : "Canada", "address" : "201, rue Président-Kennedy", "postal_code" : "G7X 3Y7", "city" : "Chicoutimi", "province" : "QC" }}}'
     json_txt3 = '{ "credit_card" : { "name" : "John Doe", "number" : "4242 4242 4242 4242", "expiration_year" : 2024, "cvv" : "123", "expiration_month" : 9 }}'
 
-    return render_template("index.html", url_default=url_default, title_request1=title_request1,  # Template form
-                           url_doc1=url1, url_doc2=url2, url_doc3=url3, methode_doc1=methode_doc1,  # Template Doc
+    return render_template("index.html", url_default=hostname+url_default, title_request1=title_request1,  # Template form
+                           url_doc1=hostname+url1, url_doc2=hostname+url2, url_doc3=hostname+url3, methode_doc1=methode_doc1,  # Template Doc
                            methode_doc2=methode_doc2, methode_doc3=methode_doc3, title_doc1=title_doc1,
                            title_doc2=title_doc2, title_doc3=title_doc3, title_doc4=title_doc4, title_doc5=title_doc5,
                            json_txt1=json_txt1, json_txt2=json_txt2, json_txt3=json_txt3, json_no_txt=json_no_txt)
+

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>API Request Template</title>
-  <link rel="stylesheet" href="../css/request-template.css">
+<!--  <link rel="stylesheet" href="../css/request-template.css">-->
   <style>
     body {
       padding: 20px;
@@ -42,14 +42,24 @@
       border: 1px solid #ccc;
       padding: 10px;
     }
+    #response-container2{
+      margin-top: 20px;
+      max-height: 200px;
+      max-width: 600px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
   </style>
 </head>
 <body>
   <h2>{{ TitleRequest }}</h2>
   <form id="request-form">
     <label for="userInput">URL:</label>
-<!--      <input type="text" id="userInput" name="userInput" value="http://172.25.0.4:5000/" oninput="checkInput(this)">-->
       <input type="text" id="userInput" name="userInput" value="{{ url }}" oninput="checkInput(this)">
+<!--      <input type="text" id="userInput" name="userInput" value="{{ url }}">-->
     <label for="method-select">Méthode:</label>
     <select id="method-select" required>
       <option value="GET">GET</option>
@@ -62,16 +72,20 @@
   </form>
   <h2>Réponse :</h2>
   <pre id="response-container"></pre>
+  <pre id="response-container2"></pre>
+
+
+
 
   <script>
   function checkInput(inputField) {
-    var predefinedValue = '{{ url }}';
-    var inputValue = inputField.value;
-    if (!inputValue.startsWith(predefinedValue)) {
-      inputField.value = predefinedValue;
-    }
+  var inputValue = inputField.value;
+  if (!inputValue.startsWith('http') && !inputValue.startsWith('https')) {
+    inputField.value = 'http://' + inputValue;
   }
+}
 </script>
+
 
   <script>
     document.getElementById('request-form').addEventListener('submit', function(event) {
@@ -80,7 +94,11 @@
       const methodSelect = document.getElementById('method-select');
       const jsonInput = document.getElementById('json-input');
       const responseContainer = document.getElementById('response-container');
+      const responseContainer2 = document.getElementById('response-container2');
       responseContainer.textContent = ''; // Réinitialiser le contenu du champ de réponse
+
+
+
 
       fetch(urlInput.value, {
         method: methodSelect.value,
@@ -91,12 +109,14 @@
       })
       .then(response => {
         if (!response.ok) {
+          responseContainer2.textContent = jsonInput.value;
           throw new Error(`Erreur: ${response.status} ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
         responseContainer.textContent = JSON.stringify(data, null, 2);
+
       })
       .catch(error => {
         responseContainer.textContent = `Erreur: ${error.message}`;
