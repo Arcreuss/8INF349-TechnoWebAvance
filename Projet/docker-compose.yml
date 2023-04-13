@@ -34,10 +34,7 @@ services:
       DB_NAME: inf349
   flask:
     build: ./api
-    #command: flask init-db
-    #command: python inf349.py
     command: bash -c "flask init-db && flask run --host=0.0.0.0 --port=5000"
-    #command: gunicorn inf349:app -b 0.0.0.0:5000 -w 1
     volumes:
       - ./api:/code
     ports:
