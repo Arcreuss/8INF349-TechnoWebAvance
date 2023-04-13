@@ -263,6 +263,10 @@ def order_get(id):
             del transac_order["order_id"]
             transac_order["transaction"] = transac_order["transact_id"]
             del transac_order["transact_id"]
+            if transac_order["transaction"]["error"] is None:
+                del transac_order["transaction"]["error"]
+            else:
+                del transac_order["transaction"]["error"]["id"]
             order.update(transac_order)
         except:
             pass
@@ -326,10 +330,10 @@ def order_get(id):
             del transac_order["order_id"]
             transac_order["transaction"] = transac_order["transact_id"]
             del transac_order["transact_id"]
-            if transac_order["transaction"]["error"] is not None:
-                del transac_order["transaction"]["error"]["id"]
-            else:
+            if transac_order["transaction"]["error"] is None:
                 del transac_order["transaction"]["error"]
+            else:
+                del transac_order["transaction"]["error"]["id"]
             order.update(transac_order)
         except:
             pass
@@ -465,17 +469,9 @@ def put_order(id):
 
         if order.payment_status == "en attente":
             order.payment_status = "en train d'être payée"
-            job = process_payment(data, order.id, card.id)
+            job = queue.enqueue(process_payment, data, order.id, card.id)
             order = Order.get(Order.id == id)
-            if job is not None:
-                json_payload = job["transaction"]
-                transact = Transaction.create(id=json_payload["id"], success=json_payload["success"],
-                                              amount_charged=json_payload["amount_charged"])
-                transacOrder = TransactionOrder.create(transact_id=transact.id, order_id=order.id)
-                transact.save()
-                transacOrder.save()
-                new_card_order.save()
-                card.save()
+            if job.is_finished:
                 id_cache = order.id
                 order.save()
                 cache_key = "order-{0}".format(id_cache)
@@ -507,20 +503,26 @@ def process_payment(data, order_id, card_id):
         error = Error.create(code, name)
         order = Order.get(Order.id == order_id)
         order.paid = False
-        order.payment_status = "test 1"
-
-        transact = Transaction.create(id=json_payload["id"], success="false",
-                                      amount_charged=json_payload["amount_charged"], error=error.id)
-        transac_order = TransactionOrder.create(transact_id=transact.id, order_id=order.id)
-        transact.save()
-        transac_order.save()
+        order.payment_status = "en attente"
         order.save()
         error.save()
     else:
         order = Order.get(Order.id == order_id)
         order.paid = True
-        order.payment_status = "test 2"
+        order.payment_status = "payée"
+        json_payload = json_payload["transaction"]
+        transact = Transaction.create(id=json_payload["id"], success=True,
+                                      amount_charged=json_payload["amount_charged"])
+        transac_order = TransactionOrder.create(transact_id=transact.id, order_id=order_id)
+        transact.save()
+        transac_order.save()
         order.save()
+
+        cache_key = "order-{0}".format(order_id)
+        order = model_to_dict(order)
+        order = json.dumps(order)
+        redis.set(cache_key, order)
+
     return json_payload
 
 
@@ -567,10 +569,10 @@ def home():
     hostname = request.headers.get('Host')
 
     # TEMPLATE
-    url1 = hostname+'/products'
-    url2 = hostname+'/order'
-    url3 = hostname+'/order/<int:order_id>'
-    url_default = hostname+'/'
+    url1 = hostname + '/products'
+    url2 = hostname + '/order'
+    url3 = hostname + '/order/<int:order_id>'
+    url_default = hostname + '/'
     title_request1 = 'Zone d\'envoie de requête'
 
     # DOCUMENTATION
