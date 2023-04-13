@@ -1,16 +1,4 @@
-# export FLASK_DEBUG=True FLASK_APP=api8inf349 REDIS_URL=redis://localhost DB_HOST=localhost DB_USER=user DB_PASSWORD=pass DB_PORT=5432 DB_NAME=api8inf349
-# python3 -m flask init-db
-# python3 -m flask run
-
-# docker build -t api8inf349
-# docker run -e REDIS_URL=redis://localhost -e DB_HOST=localhost -e DB_USER=user -e DB_PASSWORD=pass -e DB_PORT=5432 -e DB_NAME=api8inf349
-
-
-# http://dimprojetu.uqac.ca/~jgnault/shops/pay/
-
-# trop de classe
-# fusionner get et put
-# plus que 1 produit possible
+# multiple produits
 
 import json
 import requests
@@ -102,15 +90,15 @@ class CardOrder(BaseModel):
 
 
 class Error(BaseModel):
-    id = p.AutoField(primary_key=True)
-    code = p.CharField(null=False)
-    name = p.CharField(null=False)
+    id = p.AutoField(primary_key=True, null=False)
+    code = p.CharField(null=True)
+    name = p.CharField(null=True)
 
 
 class Transaction(BaseModel):
     id = p.CharField(primary_key=True, null=False)
-    success = p.BooleanField(null=False)
-    amount_charged = p.DoubleField(null=False)
+    success = p.BooleanField(null=True)
+    amount_charged = p.DoubleField(null=True)
     error = p.ForeignKeyField(Error, backref="error_order", null=True, unique=True)
 
 
@@ -500,10 +488,15 @@ def process_payment(data, order_id, card_id):
         json_payload = json_payload["errors"]["credit_card"]
         code = json_payload["code"]
         name = json_payload["name"]
-        error = Error.create(code, name)
+        error = Error.create(code=code, name=name)
         order = Order.get(Order.id == order_id)
         order.paid = False
         order.payment_status = "en attente"
+        transact = Transaction.create(id=json_payload["id"], success=False,
+                                      amount_charged=json_payload["amount_charged"],error_id=error.id)
+        transac_order = TransactionOrder.create(transact_id=transact.id, order_id=order_id)
+        transact.save()
+        transac_order.save()
         order.save()
         error.save()
     else:
