@@ -192,7 +192,7 @@ def add_order():
     new_product_order.save()
     new_order.save()
 
-    return "Location: /order/{0}".format(new_order.id), 302
+    return jsonify("Location: /order/{0}".format(new_order.id)), 302
 
 
 @app.route('/order/<int:id>', methods=['GET'])
