@@ -551,7 +551,6 @@ def home():
     methode_doc1 = 'GET'
     methode_doc2 = 'POST'
     methode_doc3 = 'PUT'
-    methode_doc4 = 'DEL'
 
     # Json
     json_no_txt = 'Pas de JSON à envoyer avec la méthode GET'
@@ -561,7 +560,7 @@ def home():
 
 
     return render_template("index.html", url_default=url_default, title_request1=title_request1, #Template form
-                           url_doc1=url1, url_doc2=url2, url_doc3=url3, methode_doc1=methode_doc1, methode_doc2=methode_doc2, #Template Doc
-                           methode_doc3=methode_doc3, methode_doc4=methode_doc4, title_doc1=title_doc1,
+                           url_doc1=url1, url_doc2=url2, url_doc3=url3, methode_doc1=methode_doc1, #Template Doc
+                           methode_doc2=methode_doc2, methode_doc3=methode_doc3, title_doc1=title_doc1,
                            title_doc2=title_doc2, title_doc3=title_doc3, title_doc4=title_doc4, title_doc5=title_doc5,
                            json_txt1=json_txt1, json_txt2=json_txt2, json_txt3=json_txt3, json_no_txt=json_no_txt)
