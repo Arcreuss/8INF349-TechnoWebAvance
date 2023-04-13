@@ -18,6 +18,20 @@ services:
       - "6379"
     volumes:
       - ./redis-data:/data
+  redis-worker:
+    build: ./api
+    command: flask worker
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      FLASK_APP: api8inf349.py
+      FLASK_DEBUG: 1
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: inf349
   flask:
     build: ./api
     #command: flask init-db
