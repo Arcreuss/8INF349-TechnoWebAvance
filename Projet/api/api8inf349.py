@@ -502,10 +502,13 @@ def process_payment(data, order_id, card_id):
         error.save()
     else:
         order = Order.get(Order.id == order_id)
-        transac_test = TransactionOrder.get(TransactionOrder.order_id == order_id)
-        if transac_test is not None:
-            qry = TransactionOrder.delete().where(TransactionOrder.order_id == order_id)
-            qry.execute()
+        try :
+            transac_test = TransactionOrder.get(TransactionOrder.order_id == order_id)
+            if transac_test is not None:
+                qry = TransactionOrder.delete().where(TransactionOrder.order_id == order_id)
+                qry.execute()
+        except:
+            pass
         json_payload = json_payload["transaction"]
         transact = Transaction.create(id=json_payload["id"], success=True,
                                       amount_charged=json_payload["amount_charged"])
