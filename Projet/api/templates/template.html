@@ -77,31 +77,40 @@
 </script>
 
 <script>
+  var formSent = false; // variable qui gardera la trace de l'envoi du formulaire
+
   document.getElementById('request-form').addEventListener('submit', function(event) {
-  event.preventDefault(); // Empêcher le rechargement de la page
+    event.preventDefault(); // Empêcher le rechargement de la page
 
-  var url = document.getElementById('userInput').value;
-  var method = document.getElementById('method-select').value;
-  var jsonData = document.getElementById('json-input').value;
-
-  var xhr = new XMLHttpRequest();
-  xhr.open(method, url, true);
-  xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        document.getElementById('response-container').textContent = xhr.responseText;
-      } else if (xhr.status === 302) {
-        document.getElementById('response-container').textContent = xhr.response;
-      } else if (xhr.status === 202) {
-        document.getElementById('response-container').textContent = '202 Accepted';
-      }else {
-        document.getElementById('response-container').textContent = 'Erreur : ' + xhr.status + ' ' + xhr.response;
-      }
+    if (formSent && document.getElementById('method-select').value === 'PUT') {
+      return; // si la requête a déjà été envoyée avec PUT, ne rien faire
     }
-  };
-  xhr.send(jsonData);
-});
+
+    var url = document.getElementById('userInput').value;
+    var method = document.getElementById('method-select').value;
+    var jsonData = document.getElementById('json-input').value;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          document.getElementById('response-container').textContent = xhr.responseText;
+        } else if (xhr.status === 302) {
+          document.getElementById('response-container').textContent = xhr.response;
+        } else if (xhr.status === 202) {
+          document.getElementById('response-container').textContent = '202 Accepted';
+        }else {
+          document.getElementById('response-container').textContent = 'Erreur : ' + xhr.status + ' ' + xhr.response;
+        }
+        if (method === 'PUT') {
+          formSent = true; // mettre la variable à true après l'envoi avec PUT
+        }
+      }
+    };
+    xhr.send(jsonData);
+  });
 </script>
 
 
