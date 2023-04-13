@@ -479,7 +479,7 @@ def process_payment(data, order_id, card_id):
     json_payload = response.json()
     cle = list(json_payload)[0]
     if cle == "errors":
-        qry = CardOrder.delete().where(CardOrder.order_id == card_id)
+        qry = CardOrder.delete().where(CardOrder.credit_card == card_id)
         qry.execute()
         qry = CreditCard.delete().where(CreditCard.id == card_id)
         qry.execute()
